@@ -1,38 +1,28 @@
-package com.tradereads.model;
+package com.tradereads.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+public class BookCreationRequest {
+    @NotNull(message = "User ID is required")
+    private Long userId;
 
-@Entity
-@Table(name = "books")
-public class Book {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @NotBlank(message = "Title is required")
     private String title;
+
+    @NotBlank(message = "Author is required")
     private String author;
+
     private String isbn;
     private String genre;
-    private String condition; // Book's physical condition
+    private String condition;
     private String description;
     private String status;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    @JsonIgnoreProperties({"password", "role", "email", "phoneNumber"})
-    private User owner;
+    public BookCreationRequest() {}
 
-    public Book() {}
-
-    public Book(String title, String author, String isbn, String genre, String condition, String description, String status, User owner) {
+    public BookCreationRequest(Long userId, String title, String author, String isbn, String genre, String condition, String description, String status) {
+        this.userId = userId;
         this.title = title;
         this.author = author;
         this.isbn = isbn;
@@ -40,16 +30,15 @@ public class Book {
         this.condition = condition;
         this.description = description;
         this.status = status;
-        this.owner = owner;
     }
 
-    public Long getId() {
-        return id;
+    public Long getUserId() {
+        return userId;
     }
-    public void setId(Long id) {
-        this.id = id;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
-    
+
     public String getTitle() {
         return title;
     }
@@ -97,12 +86,5 @@ public class Book {
     }
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public User getOwner() {
-        return owner;
-    }
-    public void setOwner(User owner) {
-        this.owner = owner;
     }
 }
