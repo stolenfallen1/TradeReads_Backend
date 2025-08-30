@@ -1,12 +1,8 @@
 package com.tradereads.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 public class BookCreationRequest {
-    @NotNull(message = "User ID is required")
-    private Long userId;
-
     @NotBlank(message = "Title is required")
     private String title;
 
@@ -21,8 +17,7 @@ public class BookCreationRequest {
 
     public BookCreationRequest() {}
 
-    public BookCreationRequest(Long userId, String title, String author, String isbn, String genre, String condition, String description, String status) {
-        this.userId = userId;
+    public BookCreationRequest(String title, String author, String isbn, String genre, String condition, String description, String status) {
         this.title = title;
         this.author = author;
         this.isbn = isbn;
@@ -30,13 +25,6 @@ public class BookCreationRequest {
         this.condition = condition;
         this.description = description;
         this.status = status;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-    public void setUserId(Long userId) {
-        this.userId = userId;
     }
 
     public String getTitle() {
