@@ -66,4 +66,20 @@ public class UserService {
         }
         return Optional.empty();
     }
+
+    public Optional<User> getUserById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    public Optional<User> getUserWithBooks(Long id) {
+        Optional<User> user = userRepository.findById(id);
+        if (user.isPresent()) {
+            user.get().getBooks().size(); // Force loading of books collection to avoid lazy loading issues!!
+        }
+        return user;
+    }
+
+    public boolean userExists(Long userId) {
+        return userRepository.existsById(userId);
+    }
 }
