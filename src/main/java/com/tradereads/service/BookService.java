@@ -6,18 +6,14 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.tradereads.model.Book;
-import com.tradereads.model.User;
 import com.tradereads.repository.BookRepository;
-import com.tradereads.repository.UserRepository;
 
 @Service
 public class BookService {
     private final BookRepository bookRepository;
-    private final UserRepository userRepository;
 
-    public BookService(BookRepository bookRepository, UserRepository userRepository) {
+    public BookService(BookRepository bookRepository) {
         this.bookRepository = bookRepository;
-        this.userRepository = userRepository;
     }
 
     public Book saveBook(Book book) {
@@ -26,6 +22,10 @@ public class BookService {
 
     public Optional<Book> getBookById(Long id) {
         return bookRepository.findById(id);
+    }
+
+    public Optional<Book> getBookByIdAndUserId(Long bookId, Long userId) {
+        return bookRepository.findByIdAndOwnerId(bookId, userId);
     }
 
     public List<Book> getAllBooks() {
@@ -58,21 +58,5 @@ public class BookService {
 
     public List<Book> getAvailableBooksExcludingUser(Long excludUserId, String status) {
         return bookRepository.findByStatusAndOwnerIdNot(status, excludUserId);
-    }
-
-    // Helper methods to create a book with owner
-    public Book createBookWithOwner(Book book, Long ownerId) {
-        Optional<User> owner = userRepository.findById(ownerId);
-        if (owner.isPresent()) {
-            book.setOwner(owner.get());
-            return bookRepository.save(book);
-        }
-        throw new IllegalArgumentException("User not found with ID: " + ownerId);
-    }
-
-    // Helper method to check if user owns the book
-    public boolean isBookOwnedByUser(Long bookId, Long userId) {
-        Optional<Book> book = bookRepository.findById(bookId);
-        return book.isPresent() && book.get().getOwner().getId().equals(userId);
     }
 }
