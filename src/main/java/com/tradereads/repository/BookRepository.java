@@ -11,11 +11,17 @@ import org.springframework.data.jpa.repository.JpaRepository;
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long> {
     List<Book> findByOwnerId(Long userId);
-    List<Book> findByOwnerIdAndStatus(Long userId, String status);
+    List<Book> findByOwnerIdAndStatus(Long userId, Book.BookStatus status);
     List<Book> findByGenre(String genre);
     List<Book> findByOwnerIdAndGenre(Long userId, String genre);
-    List<Book> findByStatus(String status);
-    List<Book> findByStatusAndOwnerIdNot(String status, Long excludeUserId);
+    List<Book> findByStatus(Book.BookStatus status);
+    List<Book> findByStatusAndOwnerIdNot(Book.BookStatus status, Long excludeUserId);
+    List<Book> findByListingType(Book.ListingType listingType);
+    List<Book> findByStatusAndListingType(Book.BookStatus status, Book.ListingType listingType);
+    List<Book> findByOwnerIdAndListingType(Long userId, Book.ListingType listingType);
+    List<Book> findByOwnerIdAndStatusAndListingType(Long userId, Book.BookStatus status, Book.ListingType listingType);
+
     Optional<Book> findByIdAndOwnerId(Long id, Long ownerId);
+
     boolean existsByIsbnAndOwnerId(String isbn, Long ownerId);
 }
