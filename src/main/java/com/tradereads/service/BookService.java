@@ -28,6 +28,10 @@ public class BookService {
         return bookRepository.findByIdAndOwnerId(bookId, userId);
     }
 
+    public boolean userAlreadyHasThisBook(String isbn, Long ownerId) {
+        return bookRepository.existsByIsbnAndOwnerId(isbn, ownerId);
+    }
+
     public List<Book> getAllBooks() {
         return bookRepository.findAll();
     }
@@ -44,7 +48,7 @@ public class BookService {
         return bookRepository.findByOwnerId(userId);
     }
 
-    public List<Book> getBooksByUserIdAndStatus(Long userId, String status) {
+    public List<Book> getBooksByUserIdAndStatus(Long userId, Book.BookStatus status) {
         return bookRepository.findByOwnerIdAndStatus(userId, status);
     }
 
@@ -52,11 +56,27 @@ public class BookService {
         return bookRepository.findByGenre(genre);
     }
 
-    public List<Book> getBooksByStatus(String status) {
+    public List<Book> getBooksByStatus(Book.BookStatus status) {
         return bookRepository.findByStatus(status);
     }
 
-    public List<Book> getAvailableBooksExcludingUser(Long excludUserId, String status) {
+    public List<Book> getAvailableBooksExcludingUser(Long excludUserId, Book.BookStatus status) {
         return bookRepository.findByStatusAndOwnerIdNot(status, excludUserId);
+    }
+
+    public List<Book> getBooksByListingType(Book.ListingType listingType) {
+        return bookRepository.findByListingType(listingType);
+    }
+
+    public List<Book> getBooksByStatusAndListingType(Book.BookStatus status, Book.ListingType listingType) {
+        return bookRepository.findByStatusAndListingType(status, listingType);
+    }
+
+    public List<Book> getBooksByUserIdAndListingType(Long userId, Book.ListingType listingType) {
+        return bookRepository.findByOwnerIdAndListingType(userId, listingType);
+    }
+
+    public List<Book> getBooksByUserIdAndStatusAndListingType(Long userId, Book.BookStatus status, Book.ListingType listingType) {
+        return bookRepository.findByOwnerIdAndStatusAndListingType(userId, status, listingType);
     }
 }

@@ -2,17 +2,41 @@ package com.tradereads.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "books")
+@Table(
+    name = "books",
+    uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"isbn", "user_id"}) // A User cannot have two books with the same ISBN
+    }
+)
 public class Book {
+
+    public enum BookStatus {
+        AVAILABLE,
+        TRADED,
+        PENDING, // Pending for trade
+        GAVEDAWAY, 
+        // SOLD, - SOON TO ADD FEATURE
+    }
+
+    public enum ListingType {
+        GIVEAWAY,
+        TRADE,
+        // SELL, - SOON TO ADD FEATURE
+        // BUY, - SOON TO ADD FEATURE
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +47,14 @@ public class Book {
     private String genre;
     private String condition; // Book's physical condition
     private String description;
-    private String status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private BookStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ListingType listingType;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -32,7 +63,7 @@ public class Book {
 
     public Book() {}
 
-    public Book(String title, String author, String isbn, String genre, String condition, String description, String status, User owner) {
+    public Book(String title, String author, String isbn, String genre, String condition, String description, BookStatus status, ListingType listingType, User owner) {
         this.title = title;
         this.author = author;
         this.isbn = isbn;
@@ -40,6 +71,7 @@ public class Book {
         this.condition = condition;
         this.description = description;
         this.status = status;
+        this.listingType = listingType;
         this.owner = owner;
     }
 
@@ -92,11 +124,18 @@ public class Book {
         this.description = description;
     }
 
-    public String getStatus() {
+    public BookStatus getStatus() {
         return status;
     }
-    public void setStatus(String status) {
+    public void setStatus(BookStatus status) {
         this.status = status;
+    }
+
+    public ListingType getListingType() {
+        return listingType;
+    }
+    public void setListingType(ListingType listingType) {
+        this.listingType = listingType;
     }
 
     public User getOwner() {

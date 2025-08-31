@@ -3,6 +3,7 @@ package com.tradereads.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,6 +11,8 @@ import com.tradereads.components.AuthUtil;
 import com.tradereads.dto.BookCreationRequest;
 import com.tradereads.model.Book;
 import com.tradereads.model.User;
+import com.tradereads.model.Book.BookStatus;
+import com.tradereads.model.Book.ListingType;
 import com.tradereads.service.BookService;
 import com.tradereads.service.UserService;
 
@@ -30,14 +33,47 @@ public class BookController {
 
     // ========= USER-OWNED BOOKS (PROTECTED ENDPOINTS) =========
 
-    @GetMapping("/my-books/all")
-    public ResponseEntity<?> getMyBooks() {
+    @GetMapping("/my-books")
+    public ResponseEntity<?> getMyBooks(
+        @RequestParam(required = false) String listingType,
+        @RequestParam(required = false) String status
+    ) {
         try {
             Long currentUserId = authUtil.getCurrentUserId();
-            List<Book> books = bookService.getBooksByUserId(currentUserId);
+            List<Book> books;
+
+            ListingType type = null;
+            BookStatus bookStatus = null;
+
+            if (listingType != null && !listingType.isBlank()) {
+                try {
+                    type = ListingType.valueOf(listingType.trim().toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Invalid listing type"));
+                }
+            }
+            
+            if (status != null && !status.isBlank()) {
+                try {
+                    bookStatus = BookStatus.valueOf(status.trim().toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Invalid status"));
+                }
+            }
+
+            if (type != null && bookStatus != null) {
+                books = bookService.getBooksByUserIdAndStatusAndListingType(currentUserId, bookStatus, type);
+            } else if (type != null) {
+                books = bookService.getBooksByUserIdAndListingType(currentUserId, type);
+            } else if (bookStatus != null) {
+                books = bookService.getBooksByUserIdAndStatus(currentUserId, bookStatus);
+            } else {
+                books = bookService.getBooksByUserId(currentUserId);
+            }
+
             return ResponseEntity.ok(books);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Internal server error"));
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -48,6 +84,10 @@ public class BookController {
             User owner = userService.getUserById(currentUserId)
                     .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+            if (bookService.userAlreadyHasThisBook(request.getIsbn(), currentUserId)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "You already have a book with this ISBN"));
+            }
+
             Book book = new Book(
                 request.getTitle(),
                 request.getAuthor(),
@@ -56,6 +96,7 @@ public class BookController {
                 request.getCondition(),
                 request.getDescription(),
                 request.getStatus(),
+                request.getListingType(),
                 owner
             );
 
@@ -63,6 +104,8 @@ public class BookController {
             return ResponseEntity.ok(savedBook);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "You already have a book with this ISBN"));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Internal server error"));
         }
@@ -82,6 +125,7 @@ public class BookController {
             existingBook.setCondition(request.getCondition());
             existingBook.setDescription(request.getDescription());
             existingBook.setStatus(request.getStatus());
+            existingBook.setListingType(request.getListingType());
 
             Book updatedBook = bookService.updateBook(existingBook);
             return ResponseEntity.ok(updatedBook);
@@ -111,20 +155,39 @@ public class BookController {
     // ========= PUBLIC BOOKS (UNPROTECTED ENDPOINTS) =========
 
     @GetMapping
-    public ResponseEntity<List<Book>> getAllBooks(
-        @RequestParam(required = false) Long userId,
+    public ResponseEntity<?> getAllBooks(
+        @RequestParam(required = false) String genre,
         @RequestParam(required = false) String status,
-        @RequestParam(required = false) String genre
+        @RequestParam(required = false) String listingType
     ) {
         try {
             List<Book> books;
 
-            if (userId != null && status != null) {
-                books = bookService.getBooksByUserIdAndStatus(userId, status);
-            } else if (userId != null) {
-                books = bookService.getBooksByUserId(userId);
-            } else if (status != null) {
-                books = bookService.getBooksByStatus(status);
+            ListingType type = null;
+            BookStatus bookStatus = null;
+
+            if (listingType != null && !listingType.isBlank()) {
+                try {
+                    type = ListingType.valueOf(listingType.trim().toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.badRequest().build();
+                }
+            }
+
+            if (status != null && !status.isBlank()) {
+                try {
+                    bookStatus = BookStatus.valueOf(status.trim().toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.badRequest().build();
+                }
+            }
+
+            if (bookStatus != null && type != null) {
+                books = bookService.getBooksByStatusAndListingType(bookStatus, type);
+            } else if (type != null) {
+                books = bookService.getBooksByListingType(type);
+            } else if (bookStatus != null) {
+                books = bookService.getBooksByStatus(bookStatus);
             } else if (genre != null) {
                 books = bookService.getBooksByGenre(genre);
             } else {
@@ -149,9 +212,9 @@ public class BookController {
         try {
             List<Book> books;
             if (excludeUserId != null) {
-                books = bookService.getAvailableBooksExcludingUser(excludeUserId, "Available");
-            } else {
-                books = bookService.getBooksByStatus("Available");
+                books = bookService.getAvailableBooksExcludingUser(excludeUserId, BookStatus.AVAILABLE);
+            } else {    
+                books = bookService.getBooksByStatus(BookStatus.AVAILABLE);
             }
             return ResponseEntity.ok(books);
         } catch (Exception e) {
