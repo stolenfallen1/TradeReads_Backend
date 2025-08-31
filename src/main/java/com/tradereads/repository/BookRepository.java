@@ -17,4 +17,5 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     List<Book> findByStatus(String status);
     List<Book> findByStatusAndOwnerIdNot(String status, Long excludeUserId);
     Optional<Book> findByIdAndOwnerId(Long id, Long ownerId);
+    boolean existsByIsbnAndOwnerId(String isbn, Long ownerId);
 }

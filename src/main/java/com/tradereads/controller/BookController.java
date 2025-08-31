@@ -3,6 +3,7 @@ package com.tradereads.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,6 +49,10 @@ public class BookController {
             User owner = userService.getUserById(currentUserId)
                     .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+            if (bookService.userAlreadyHasThisBook(request.getIsbn(), currentUserId)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "You already have a book with this ISBN"));
+            }
+
             Book book = new Book(
                 request.getTitle(),
                 request.getAuthor(),
@@ -63,6 +68,8 @@ public class BookController {
             return ResponseEntity.ok(savedBook);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "You already have a book with this ISBN"));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Internal server error"));
         }

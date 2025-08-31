@@ -28,6 +28,10 @@ public class BookService {
         return bookRepository.findByIdAndOwnerId(bookId, userId);
     }
 
+    public boolean userAlreadyHasThisBook(String isbn, Long ownerId) {
+        return bookRepository.existsByIsbnAndOwnerId(isbn, ownerId);
+    }
+
     public List<Book> getAllBooks() {
         return bookRepository.findAll();
     }
