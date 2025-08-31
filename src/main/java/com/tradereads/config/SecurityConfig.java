@@ -32,11 +32,9 @@ public class SecurityConfig {
                 // Public endpoints
                 .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
                 // Public read-only book endpoints
-                .requestMatchers(HttpMethod.GET, "/api/books", "/api/books/{id}", "/api/books/available").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/books", "/api/books/*", "/api/books/available").permitAll()
                 // User-specific (protected) book endpoints
-                .requestMatchers("/api/books/my-books/**").authenticated()
-                // Any other endpoints (just for fallback), but better to really specify the endpoints that needs protecting!
-                .anyRequest().authenticated()
+                .requestMatchers("/api/auth/users", "/api/books/my-books/**").authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
