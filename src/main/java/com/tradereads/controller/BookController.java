@@ -30,7 +30,7 @@ public class BookController {
 
     // ========= USER-OWNED BOOKS (PROTECTED ENDPOINTS) =========
 
-    @GetMapping("/my-books")
+    @GetMapping("/my-books/all")
     public ResponseEntity<?> getMyBooks() {
         try {
             Long currentUserId = authUtil.getCurrentUserId();
