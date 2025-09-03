@@ -1,6 +1,6 @@
 package com.tradereads.controller;
 
-import com.tradereads.dto.LoginRequest;
+import com.tradereads.dto.LoginRequestDTO;
 import com.tradereads.model.User;
 
 import java.util.List;
@@ -64,7 +64,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
         try {
             Optional<User> authenticateUser = userService.authenticateUser(
                 loginRequest.getUsername(), 

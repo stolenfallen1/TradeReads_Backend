@@ -6,7 +6,7 @@ import com.tradereads.model.Book.ListingType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public class BookCreationRequest {
+public class BookCreationRequestDTO {
     @NotBlank(message = "Title is required")
     private String title;
 
@@ -22,9 +22,9 @@ public class BookCreationRequest {
     @NotNull(message = "Listing type is required")
     private ListingType listingType;
 
-    public BookCreationRequest() {}
+    public BookCreationRequestDTO() {}
 
-    public BookCreationRequest(String title, String author, String isbn, String genre, String condition, String description, BookStatus status, ListingType listingType) {
+    public BookCreationRequestDTO(String title, String author, String isbn, String genre, String condition, String description, BookStatus status, ListingType listingType) {
         this.title = title;
         this.author = author;
         this.isbn = isbn;

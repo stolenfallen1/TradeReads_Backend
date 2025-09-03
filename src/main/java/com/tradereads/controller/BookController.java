@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.tradereads.components.AuthUtil;
-import com.tradereads.dto.BookCreationRequest;
+import com.tradereads.dto.BookCreationRequestDTO;
 import com.tradereads.model.Book;
 import com.tradereads.model.User;
 import com.tradereads.model.Book.BookStatus;
@@ -78,7 +78,7 @@ public class BookController {
     }
 
     @PostMapping("/my-books")
-    public ResponseEntity<?> createMyBook(@Valid @RequestBody BookCreationRequest request) {
+    public ResponseEntity<?> createMyBook(@Valid @RequestBody BookCreationRequestDTO request) {
         try {
             Long currentUserId = authUtil.getCurrentUserId();
             User owner = userService.getUserById(currentUserId)
@@ -112,7 +112,7 @@ public class BookController {
     }
 
     @PutMapping("/my-books/{id}")
-    public ResponseEntity<?> updateMyBook(@PathVariable Long id, @Valid @RequestBody BookCreationRequest request) {
+    public ResponseEntity<?> updateMyBook(@PathVariable Long id, @Valid @RequestBody BookCreationRequestDTO request) {
         try {
             Long currentUserId = authUtil.getCurrentUserId();
             Book existingBook = bookService.getBookByIdAndUserId(id, currentUserId)
