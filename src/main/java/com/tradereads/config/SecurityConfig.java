@@ -33,8 +33,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
                 // Public read-only book endpoints
                 .requestMatchers(HttpMethod.GET, "/api/books", "/api/books/*", "/api/books/available").permitAll()
-                // User-specific (protected) book endpoints
-                .requestMatchers("/api/auth/users", "/api/books/my-books/**").authenticated()
+                // User-specific (protected) endpoints
+                .requestMatchers("/api/auth/users", "/api/auth/logout", "/api/auth/logout-all", "/api/auth/refresh-token").authenticated()
+                .requestMatchers("/api/books/my-books/**").authenticated()
+                .requestMatchers("/api/trades/**").authenticated() 
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

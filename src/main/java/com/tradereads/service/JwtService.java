@@ -1,8 +1,7 @@
 package com.tradereads.service;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 
 import javax.crypto.SecretKey;
@@ -19,25 +18,29 @@ public class JwtService {
     @Value("${jwt.secret:mySecretKey12345678901234567890123456789012345678901234567890}")
     private String secret;
 
-    @Value("${jwt.expiration:86400000}") // 24 hours in miliseconds
-    private long expiration;
+    @Value("${jwt.access-token-expiration:600000}") // 10 minutes in milliseconds
+    private long accessTokenExpiration;
 
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes());
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String generateToken(String username, Long userId, String role) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", userId);
-        claims.put("role", role);
-        return createToken(claims, username);
+        return createToken(username, userId, role, accessTokenExpiration);
     }
 
-    private String createToken(Map<String, Object> claims, String subject) {
+    
+    public String generateAccessTokenFromRefreshToken(String username, Long userId, String role) {
+        return generateToken(username, userId, role);
+    }
+
+    private String createToken(String username, Long userId, String role, long expiration) {
         return Jwts.builder()
-                .claims(claims)
-                .subject(subject)
-                .issuedAt(new Date(System.currentTimeMillis()))
+                .subject(username)
+                .claim("userId", userId)
+                .claim("role", role)
+                .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey())
                 .compact();
@@ -48,7 +51,11 @@ public class JwtService {
     }
 
     public Long extractUserId(String token) {
-        return extractClaim(token, claims -> claims.get("userId", Long.class));
+        Claims claims = extractAllClaims(token);
+        if (claims == null) return null;
+
+        Number n = claims.get("userId", Number.class);
+        return n == null ? null : n.longValue();
     }
 
     public String extractRole(String token) {
@@ -65,11 +72,16 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        try {
+            return Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (Exception e) {
+            System.out.println("Error extracting claims from token: " + e.getMessage());
+            return null;
+        }
     }
 
     private Boolean isTokenExpired(String token) {
