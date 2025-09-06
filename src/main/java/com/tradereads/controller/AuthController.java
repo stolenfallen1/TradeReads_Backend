@@ -42,14 +42,14 @@ public class AuthController {
             User registeredUser = userService.registerUser(
                 user.getUsername(), 
                 user.getPassword(), 
-                user.getRole(), user.getEmail(), 
+                user.getUserRole(), user.getEmail(), 
                 user.getPhoneNumber()
             );
 
             String token = jwtService.generateToken(
                 registeredUser.getUsername(),
                 registeredUser.getId(),
-                registeredUser.getRole()
+                registeredUser.getUserRole()
             );
 
             registeredUser.setPassword(null); // Never return password in response
@@ -76,7 +76,7 @@ public class AuthController {
                 String token = jwtService.generateToken(
                     user.getUsername(),
                     user.getId(),
-                    user.getRole()
+                    user.getUserRole()
                 );
                 user.setPassword(null); // Avoid sending password back in response
                 return ResponseEntity.ok(Map.of(

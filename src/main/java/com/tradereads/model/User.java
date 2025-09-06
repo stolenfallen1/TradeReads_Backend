@@ -35,7 +35,8 @@ public class User {
     private String password;
 
     @NotBlank(message = "Role is required")
-    private String role;
+    @Column(name = "user_role", nullable = false)
+    private String userRole;
 
     @Column(unique = true, nullable = false)
     @NotBlank(message = "Email is required")
@@ -52,10 +53,10 @@ public class User {
 
     public User() {}
 
-    public User(String username, String password, String role, String email, String phoneNumber) {
+    public User(String username, String password, String userRole, String email, String phoneNumber) {
         this.username = username;
         this.password = password;
-        this.role = role;
+        this.userRole = userRole;
         this.email = email;
         this.phoneNumber = phoneNumber;
     }
@@ -81,11 +82,11 @@ public class User {
         this.password = password;
     }
 
-    public String getRole() {
-        return role;
+    public String getUserRole() {
+        return userRole;
     }
-    public void setRole(String role) {
-        this.role = role;
+    public void setUserRole(String userRole) {
+        this.userRole = userRole;
     }
 
     public String getEmail() {
